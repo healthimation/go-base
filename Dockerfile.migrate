@@ -1,0 +1,5 @@
+FROM centurylink/ca-certs:latest
+
+ADD bin/migrate /migrate
+ADD build/migration /migration
+CMD ["/migrate"]
