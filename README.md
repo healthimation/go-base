@@ -10,9 +10,9 @@ A base service to start new services from
 * Push
 
 ```sh
-git clone git@github.com:divideandconquer/go-base.git new-service
+git clone git@github.com:healthimation/go-base.git new-service
 cd new-service
-sh init.sh new-service
+sh init.sh <serviceName>
 
 # govendor init
 # govendor update +external
