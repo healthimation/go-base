@@ -29,7 +29,7 @@ type server struct {
 }
 
 // NewServer returns a Server
-func NewServer(env, serviceName string, conf client.Loader, lb balancer.DNS) service.Server {
+func NewServer(env, serviceName string, conf config.Loader, lb balancer.DNS) service.Server {
 	ret := &server{environment: env, serviceName: serviceName, conf: conf, balancer: lb}
 	ret.init()
 	return ret
@@ -45,11 +45,8 @@ func (s *server) init() {
 	//initialize the db
 	dbFactory := data.GetDBFactory(s.balancer, dbUser, dbPass, s.serviceName, log)
 
-	mt, err := middleware.NewNewrelicTimer(s.environment, s.serviceName, newrelicKey)
-	if err != nil {
-		log.Fatalf("Could not instantiate newrelic middleware timer: %v", err)
-	}
-	b := chain.NewBase(alice.New(), mt, middleware.NewLogrusLogger(log, true))
+	// To track timer metrics setup and pass in a timer instead of nil
+	b := chain.NewBase(alice.New(), nil, middleware.NewLogrusLogger(log, true))
 
 	// error handlers
 	vestigo.CustomNotFoundHandlerFunc(chain.NotFoundHandler)
