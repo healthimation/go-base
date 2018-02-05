@@ -23,5 +23,5 @@ fi
 # Also build the migrate binary (it must already be vendored in via Godeps!)
 if $buildAll
 then
-  CGO_ENABLED=0 go build -a -ldflags "-s" -installsuffix cgo -o bin/migrate ${name}/vendor/github.com/fedyakin/migrate
+  CGO_ENABLED=0 go build -a -ldflags "-s" -installsuffix cgo -o bin/migrate ${name}/vendor/github.com/healthimation/migrate
 fi
