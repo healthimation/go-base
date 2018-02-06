@@ -22,6 +22,16 @@ then
   IncludeSecret=""
 fi
 
+# Default to using the ip of eth1 as the "externally reachable" interface
+HostIP=$(ip -4 add show eth1 |grep inet | cut -d ' ' -f6 | cut -d '/' -f1)
+# Use CoreOS injected vars if they are available
+MetaDataFile="/run/metadata/coreos"
+if [ -f $MetaDataFile ];
+then
+  source $MetaDataFile
+  HostIP=$COREOS_VAGRANT_VIRTUALBOX_PRIVATE_IPV4
+fi
+
 #handle args
 while getopts ":p:" opt; do
   case $opt in
@@ -56,7 +66,6 @@ if [ "$running" == "" ]
 fi
 
 # Detect DB ip:port
-HostIP=$COREOS_PUBLIC_IPV4
 DbPublicPort=`docker ps | grep $DBName | cut -d : -f2 | cut -d - -f1`
 # register db on the host ip:port for the service and test.sh
 resp=$(curl -s -o /dev/null -w "%{http_code}" -X PUT -d '{"Datacenter": "vagrant", "Node": "dev-db", "Address": "'$HostIP'", "Service": {"Service": "'$DBName'", "Address": "'$HostIP'", "Tags": ["dev"], "Port": '$DbPublicPort'}}' http://$HostIP:8500/v1/catalog/register)
@@ -76,7 +85,7 @@ useServicesEnv="--env-file /etc/services.env"
 if [ ! -f "/etc/services.env" ];
 then
   echo "Warning! /etc/services.env not found, service to service communication may not work as expected."
-  $useServicesEnv=""
+  useServicesEnv=""
 fi
 
 # run the container
