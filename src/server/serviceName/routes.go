@@ -36,9 +36,9 @@ func NewServer(env, serviceName string, conf config.Loader, lb balancer.DNS) ser
 }
 
 func (s *server) init() {
-	dbUser := s.conf.MustGetString(prefixed(configKeyDBUser))
-	dbPass := s.conf.MustGetString(prefixed(configKeyDBPassword))
-	useCORS := s.conf.MustGetBool(prefixed(configKeyUseCORS))
+	dbUser := s.conf.MustGetString(configKeyDBUser)
+	dbPass := s.conf.MustGetString(configKeyDBPassword)
+	useCORS := s.conf.MustGetBool(configKeyUseCORS)
 
 	log := middleware.GetDefaultLogger(s.serviceName, s.environment)
 
