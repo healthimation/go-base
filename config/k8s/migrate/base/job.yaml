@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: <serviceName>-migrate
+spec:
+  backoffLimit: 10 # number of retries before throwing error
+  activeDeadlineSeconds: 120 # time to allow job to run
+  ttlSecondsAfterFinished: 600 # auto cleanup ttl
+  template:
+    metadata:
+      labels:
+        app: <serviceName>-migrate
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: <serviceName>-migrate
+          env:
+            - name: AWS_REGION
+              value: us-east-2

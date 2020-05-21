@@ -12,6 +12,8 @@ import (
 // config keys
 const (
 	configKeyEnvironment = "HMD_ENVIRONMENT"
+	configKeyPathPrefix        = "PATH_PREFIX"
+	configKeyAppendServiceName = "APPEND_SERVICE_NAME"
 )
 
 func main() {
@@ -27,8 +29,11 @@ func main() {
 		log.Fatalf("Couldnt initialize config: %v", err)
 	}
 
+	appendServiceName := conf.MustGetBool(configKeyAppendServiceName)
+	pathPrefix := conf.MustGetString(configKeyPathPrefix)
+
 	b := balancer.NewEnvBalancer("PGHOST", "PGPORT", "HMD", "URL")
-	svr := <serviceName>.NewServer(env, <serviceName>.DefaultServiceName, conf, b)
+	svr := <serviceName>.NewServer(env, <serviceName>.DefaultServiceName, pathPrefix, appendServiceName, conf, b)
 
 	// Start up the server
 	log.Printf("Starting %s %s", env, <serviceName>.DefaultServiceName)

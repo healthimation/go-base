@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: <serviceName>-migrate
+spec:
+  template:
+    metadata:
+      labels:
+        app: <serviceName>-migrate
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: <serviceName>-migrate
+          image: <serviceName>-migrate:latest
+          args: ["-url", "postgres://postgres:postgres@<serviceName>-db/<serviceName>?sslmode=disable", "-path", "/migration", "up"]
+          imagePullPolicy: Never

@@ -1,5 +1,3 @@
-FROM centurylink/ca-certs:latest
+FROM awayteam/migrate
 
-ADD bin/migrate /migrate
 ADD build/migration /migration
-CMD ["/migrate"]

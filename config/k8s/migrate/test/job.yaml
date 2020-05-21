@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: <serviceName>-test-migrate
+spec:
+  backoffLimit: 0 # number of retries before throwing error
+  activeDeadlineSeconds: 120 # time to allow job to run
+  ttlSecondsAfterFinished: 600 # auto cleanup ttl
+  template:
+    metadata:
+      labels:
+        app: <serviceName>-test-migrate
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: <serviceName>-test-migrate
+          image: <serviceName>-test-migrate:latest
+          args: ["-url", "postgres://postgres:postgres@<serviceName>-test-db/<serviceName>-test?sslmode=disable", "-path", "/migration", "up"]
+          imagePullPolicy: Never

@@ -2,91 +2,90 @@
 
 #### Config Vars ####
 # update these to reflect your service
-source `pwd`/build/vars.sh
-BasePath="/home/core/dev/"
-port="8080"
-dbPort="5432"
+ServiceName="<serviceName>"
+kubeContext="docker-desktop"
+awsSecretName="aws-auth"
 
-# The config env file to pass to docker run
-EnvFile="`pwd`/config/dev.env"
-if [ ! -f $EnvFile ];
-then
-  echo "Cannot find ${EnvFile}"
-  exit 1
-fi
-
-SecretEnvFile="`pwd`/config/secret.env"
-IncludeSecret="--env-file `pwd`/config/secret.env"
-if [ ! -f $SecretEnvFile ];
-then
-  IncludeSecret=""
-fi
-
-# Default to using the ip of eth1 as the "externally reachable" interface
-HostIP=$(ip -4 add show eth1 |grep inet | cut -d ' ' -f6 | cut -d '/' -f1)
-# Use CoreOS injected vars if they are available
-MetaDataFile="/run/metadata/coreos"
-if [ -f $MetaDataFile ];
-then
-  source $MetaDataFile
-  HostIP=$COREOS_VAGRANT_VIRTUALBOX_PRIVATE_IPV4
-fi
-
-#handle args
-while getopts ":p:" opt; do
-  case $opt in
-    p)
-      port=$OPTARG
-      echo "port overridden to $port"
-      ;;
-  esac
-done
 
 # determine service path for volume mounting
 CurrentDir=`pwd`
 ServicePath="${CurrentDir/$BasePath/}"
 
-# run the build
-docker run --rm -it -v `pwd`:"/go/src/$ServicePath" -w /go/src/$ServicePath healthymation/docker-godep:1.7.3 ./build/build.sh -a || { echo 'build failed' ; exit 1; }
 
+# echo -e "\033[0;35mBuilding Service\033[0m"
+# run the build
+# docker run --rm -it -v `pwd`:"/go/src/$ServicePath" -w /go/src/$ServicePath golang:1.14 ./build/build.sh || { echo 'build failed' ; exit 1; }
+
+echo -e "\033[0;35mBuilding Containers\033[0m"
 # build the docker container with the new binary
 docker build -t $ServiceName .
+if [ $? -gt 0 ]; then exit 1; fi
+
 docker build -t $ServiceName-migrate -f Dockerfile.migrate .
 
 
-# run the DB container
-DBName="$ServiceName-db"
-# only run the db if it isnt already running
-running=$(docker ps -q -f "name=$DBName" -f "status=running" )
-if [ "$running" == "" ]
-  then
-  docker rm $DBName &>/dev/null
-  docker run --name $DBName -e POSTGRES_PASSWORD=password -e POSTGRES_DB=$ServiceName -P -d postgres
-  sleep 10
-fi
+echo -e "\033[0;35mSwitching k8s Context\033[0m"
+# target the local docker k8s cluster
+kubectl config use-context ${kubeContext}
 
-# Detect DB ip:port
-DbPublicPort=`docker ps | grep $DBName | cut -d : -f2 | cut -d - -f1`
-# register db on the host ip:port for the service and test.sh
-resp=$(curl -s -o /dev/null -w "%{http_code}" -X PUT -d '{"Datacenter": "vagrant", "Node": "dev-db", "Address": "'$HostIP'", "Service": {"Service": "'$DBName'", "Address": "'$HostIP'", "Tags": ["dev"], "Port": '$DbPublicPort'}}' http://$HostIP:8500/v1/catalog/register)
-if [ "$resp" != "200" ]
+echo -e "\033[0;35mSetting up AWS credentials\033[0m"
+# make sure aws auth is configure
+if [ -z $AWS_ACCESS_KEY_ID ]
 then
-  echo "Non-200 response adding DB to Consul ($resp)"
-  exit 1
+    echo -e "\033[0;31mNo AWS keys found in environment\033[0m"
+    exit 1
 fi
+kubectl create secret generic ${awsSecretName} \
+    --from-literal=AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+    --from-literal=AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+    --from-literal=AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} \
+    --from-literal=AWS_SECURITY_TOKEN=${AWS_SECURITY_TOKEN} \
+    --dry-run=client -o yaml | kubectl apply -f -
 
-# run the migrations
-echo "Running migrations on postgres: $DBName:$DbPublicPort"
-docker run --rm -ti -v $CurrentDir/build/migration:/migration $ServiceName-migrate /migrate -url "postgres://postgres:password@$DBName:$DbPublicPort/$ServiceName?sslmode=disable" -path /migration up
+echo -e "\033[0;35mDeploying service and db stack\033[0m"
+# deploy the service
+kubectl delete deployment ${ServiceName} || true
+kubectl apply -k config/k8s/service/local
 
+echo -e "\033[0;35mWaiting on db..\033[0m"
+# wait for db to be ready
+kubectl wait --for=condition=ready pod -l app=${ServiceName}-db
 
-# Use the services location env provided by the host file if it exists
-useServicesEnv="--env-file /etc/services.env"
-if [ ! -f "/etc/services.env" ];
-then
-  echo "Warning! /etc/services.env not found, service to service communication may not work as expected."
-  useServicesEnv=""
-fi
+echo -e "\033[0;35mRunning migrations...\033[0m"
+# run migrations and wait
+kubectl delete -k config/k8s/migrate/local || true
+kubectl apply -k config/k8s/migrate/local
+sleep 2
 
-# run the container
-docker run --rm -it -p $port:8080 -e PGHOST=$DBName -e PGPORT=$DbPublicPort --env-file $EnvFile $IncludeSecret $useServicesEnv -e SERVICE_NAME=$ServiceName $ServiceName
+#kubectl get pods -l app=authentication-migrate --sort-by=.metadata.creationTimestamp -o jsonpath="{.items[-1].metadata.name}"
+complete=0
+failCount=0
+while [ $complete = 0 ]
+do
+    
+    if [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.failed}') -gt 1 ]]
+    then
+        if [ "$failCount" -gt 30 ]
+        then
+            echo -e "\033[0;31mMigration Failed: exceeded max tries\033[0m"
+            kubectl logs job/${ServiceName}-migrate
+            exit 1
+        else 
+            echo "Waiting..."
+            let "failCount++" 
+        fi
+    elif [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.succeeded}') = '1' ]]
+    then
+        echo "Migration Completed"
+        complete=1
+    elif [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.active}') = '1' ]]
+    then
+        echo "Migration Running..."
+    else
+        echo "unexpected migration job state!"
+        kubectl get job ${ServiceName}-migrate -o yaml
+        exit 1
+    fi
+    sleep 1
+done
+
