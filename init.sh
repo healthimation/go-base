@@ -9,7 +9,8 @@ find $DIR/build -type f -name '*.sh' -print0 | xargs -0 sed -i '' "s/<serviceNam
 find $DIR/src/main -type f -name '*.go' -print0 | xargs -0  sed -i '' "s/<serviceName>/$1/g" 
 find $DIR/src/server/serviceName -type f -name '*.go' -print0 | xargs -0  sed -i '' "s/<serviceName>/$1/g" 
 find $DIR/src/serviceName -type f -name '*.go' -print0 | xargs -0  sed -i '' "s/<serviceName>/$1/g" 
-find $DIR/src/config -type f -name '*.yaml' -print0 | xargs -0  sed -i '' "s/<serviceName>/$1/g" 
+find $DIR//config -type f -name '*.yaml' -print0 | xargs -0  sed -i '' "s/<serviceName>/$1/g" 
+find $DIR/.github -type f -name '*.yml' -print0 | xargs -0  sed -i '' "s/<serviceName>/$1/g" 
 
 echo "moving serviceName directories..."
 mv $DIR/src/server/serviceName $DIR/src/server/$1
