@@ -1,8 +1,11 @@
 #!/bin/bash
+set -e
 
-source `pwd`/build/vars.sh
+ServiceName="<serviceName>-test"
 verboseMode=""
 runOpt=""
+clean="false"
+kubeContext="docker-desktop"
 
 #handle args
 while getopts ":vr:" opt; do
@@ -13,29 +16,85 @@ while getopts ":vr:" opt; do
     r)
       runOpt="-run (?i)$OPTARG"
       ;;
+    c)
+      clean="true"
+      ;;
   esac
 done
 
 export SERVICE_NAME=$ServiceName
+docker build -t $ServiceName-migrate -f Dockerfile.migrate .
 
-# default consul
-if [ ! -n "${CONSUL_HTTP_ADDR+1}" ]; then
-  echo "Defaulting CONSUL_HTTP_ADDR to 172.17.8.101:8500"
-  export CONSUL_HTTP_ADDR=172.17.8.101:8500
+echo -e "\033[0;35mSwitching k8s Context\033[0m"
+# target the local docker k8s cluster
+kubectl config use-context ${kubeContext}
+
+if [ $clean = "true" ]
+then 
+  echo -e "\033[0;35mDestroying service stack and wiping database\033[0m"
+  # deploy the service stack
+  kubectl delete -f config/k8s/service/test || true
+  rm -r "/tmp/k8s-${ServiceName}-db" || true
 fi
+
+kubectl apply -f config/k8s/service/test
+
+echo -e "\033[0;35mWaiting on db..\033[0m"
+# wait for db to be ready
+kubectl wait --for=condition=ready pod -l app=${ServiceName}-db
+sleep 2
+
+echo -e "\033[0;35mRunning migrations...\033[0m"
+# run migrations and wait
+kubectl delete -f config/k8s/migrate/test || true
+kubectl apply -f config/k8s/migrate/test
+
+
+
+complete=0
+failCount=0
+while [ $complete = 0 ]
+do
+    
+    if [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.failed}') -gt 1 ]]
+    then
+        if [ "$failCount" -gt 30 ]
+        then
+            echo -e "\033[0;31mMigration Failed: exceeded max tries\033[0m"
+            kubectl logs job/${ServiceName}-migrate
+            exit 1
+        else 
+            echo "Waiting..."
+            let "failCount++" 
+        fi
+    elif [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.succeeded}') = '1' ]]
+    then
+        echo "Migration Completed"
+        complete=1
+    elif [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.active}') = '1' ]]
+    then
+        echo "Migration Running..."
+    else
+        echo "wtf?"
+        kubectl get job ${ServiceName}-migrate -o yaml
+        exit 1
+    fi
+    sleep 1
+done
 
 # lookup db host
 if [ ! -n "${DATABASE_HOST+1}" ]; then
-  dbport=`curl --silent -X GET $CONSUL_HTTP_ADDR/v1/catalog/service/$ServiceName-db?tag=dev | cut -d : -f8 | cut -d , -f1`
-  echo "Defaulting DATABASE_HOST based on consul lookup: 172.17.8.101:$dbport"
-  export DATABASE_HOST="172.17.8.101:$dbport"
+  dbport=$(kubectl describe svc ${ServiceName}-db | grep 'NodePort:' | awk '{print $3}' | cut -d/ -f 1)
+  echo "Defaulting DATABASE_HOST based on kubectl lookup: localhost:$dbport"
+  export DATABASE_HOST="localhost:$dbport"
 fi
 
 
 # default service host
 if [ ! -n "${SERVICE_HOST+1}" ]; then
-  echo "Defaulting SERVICE_HOST to: 172.17.8.101:8080"
-  export SERVICE_HOST=172.17.8.101:8080
+  port=$(kubectl describe svc ${ServiceName} | grep 'NodePort:' | awk '{print $3}' | cut -d/ -f 1)
+  echo "Defaulting SERVICE_HOST to: localhost:${port}"
+  export SERVICE_HOST="localhost:${port}"
 fi
 
 # find all go packages

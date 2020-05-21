@@ -1,0 +1,61 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: <serviceName>-db
+  labels:
+    type: local
+    app: <serviceName>-db
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: "/tmp/k8s-<serviceName>-db"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: <serviceName>-db-pv-claim
+  labels:
+    app: <serviceName>-db
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: <serviceName>-db
+spec:
+  selector:
+    matchLabels:
+      app: <serviceName>-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: <serviceName>-db
+    spec:
+      containers:
+        - name: <serviceName>-db
+          image: postgres:10.4
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: POSTGRES_DB
+              value: <serviceName>
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: <serviceName>-db-vol
+      volumes:
+        - name: <serviceName>-db-vol
+          persistentVolumeClaim:
+            claimName: <serviceName>-db-pv-claim

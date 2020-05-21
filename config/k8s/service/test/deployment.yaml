@@ -1,0 +1,35 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: <serviceName>-test
+spec:
+  selector:
+    matchLabels:
+      app: <serviceName>-test
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: <serviceName>-test
+    spec:
+      containers:
+        - name: <serviceName>-test
+          image: <serviceName>:latest
+          imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: aws-auth
+
+          ports:
+            - containerPort: 8080
+          env:
+            - name: HMD_ENVIRONMENT
+              value: "dev"
+            - name: AWS_DEFAULT_REGION
+              value: "us-east-2"
+            - name: AWS_REGION
+              value: "us-east-2"
+            - name: PGHOST
+              value: "<serviceName>-test-db"
+            - name: PGPORT
+              value: "5432"

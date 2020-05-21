@@ -6,6 +6,7 @@ import (
 	"github.com/healthimation/go-service/alice/chain"
 	"github.com/healthimation/go-service/alice/middleware"
 	"github.com/healthimation/go-service/service"
+	"github.com/healthimation/go-client/client"
 	"github.com/husobee/vestigo"
 	"github.com/justinas/alice"
 )
@@ -23,14 +24,16 @@ const DefaultServiceName = "<serviceName>"
 type server struct {
 	environment string
 	serviceName string
+	pathPrefix               string
+	appendServiceNameToRoute bool
 	router      *vestigo.Router
 	conf        config.Loader
 	balancer    balancer.DNS
 }
 
 // NewServer returns a Server
-func NewServer(env, serviceName string, conf config.Loader, lb balancer.DNS) service.Server {
-	ret := &server{environment: env, serviceName: serviceName, conf: conf, balancer: lb}
+func NewServer(env, serviceName string, pathPrefix string, appendServiceNameToRoute bool, conf config.Loader, lb balancer.DNS) service.Server {
+	ret := &server{environment: env, serviceName: serviceName, conf: conf, balancer: lb, pathPrefix: pathPrefix, appendServiceNameToRoute: appendServiceNameToRoute}
 	ret.init()
 	return ret
 }
@@ -63,7 +66,7 @@ func (s *server) init() {
 	}
 
 	// Setup routes
-	router.Get("/v1/test/ping", b.Measure("ping", test.Ping()))
+	router.Get(s.prefixRoute("/v1/test/ping"), b.Measure("ping", test.Ping()))
 
 	s.router = router
 }
@@ -76,4 +79,9 @@ func (s *server) GetEnvironment() string {
 }
 func (s *server) GetServiceName() string {
 	return s.serviceName
+}
+
+func (s *server) prefixRoute(route string) string {
+	r := client.PrefixRoute(s.serviceName, s.pathPrefix, s.appendServiceNameToRoute, route)
+	return r
 }

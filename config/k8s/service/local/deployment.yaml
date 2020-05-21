@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: <serviceName>
+spec:
+  template:
+    metadata:
+      labels:
+        app: <serviceName>
+    spec:
+      containers:
+        - name: <serviceName>
+          image: <serviceName>:latest
+          ports:
+
+          # don't try to pull the image since it was built locally
+          imagePullPolicy: Never
+          env:
+            - name: HMD_ENVIRONMENT
+              value: "local"
+          envFrom:
+            - secretRef:
+                name: aws-auth

@@ -1,0 +1,7 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: <serviceName>-db
+spec:
+  type: ExternalName
+  externalName: <RDS HOST NAME>

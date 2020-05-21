@@ -14,9 +14,6 @@ git clone git@github.com:healthimation/go-base.git new-service
 cd new-service
 sh init.sh <serviceName>
 
-# govendor init
-# govendor update +external
-
 git remote set-url origin git://new.url.here
 git add *
 git commit -m "initial clone"
