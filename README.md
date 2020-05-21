@@ -13,6 +13,9 @@ A base service to start new services from
 git clone git@github.com:healthimation/go-base.git new-service
 cd new-service
 sh init.sh <serviceName>
+go mod init
+go get github.com/dgrijalva/jwt-go@v2.7.0
+go mod vendor
 
 git remote set-url origin git://new.url.here
 git add *
