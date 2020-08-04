@@ -1,11 +1,9 @@
 package data
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/healthimation/go-glitch/glitch"
 	"github.com/healthimation/go-glitch/postgres"
@@ -15,7 +13,6 @@ import (
 type Database interface {
 	// ClearTestData will clear out test data
 	ClearTestData() glitch.DataError
-	CreateGoal(ctx context.Context, userID string, goalType string, category string, value int64, name *string, description *string, startsAt time.Time, expiresAt time.Time) glitch.DataError
 }
 
 // keeps track of the db pool for each connection string
@@ -74,11 +71,4 @@ func (d *db) ClearTestData() glitch.DataError {
 	query := "SELECT * FROM clear_test_data()"
 	_, err := d.conn.Exec(query)
 	return postgres.ToDataError(err, "Error executing query")
-}
-
-func (d *db) CreateGoal(ctx context.Context, userID string, goalType string, category string, value int64, name *string, description *string, startsAt time.Time, expiresAt time.Time) glitch.DataError {
-	stmt := "SELECT * FROM create_goal($1,$2,$3,$4,$5,$6,$7,$8)"
-	_, err := d.conn.ExecContext(ctx, stmt, userID, goalType, category, value, name, description, startsAt, expiresAt)
-
-	return postgres.ToDataError(err, "Error creating goal")
 }

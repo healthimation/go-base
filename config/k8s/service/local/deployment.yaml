@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: goal
+  name: <serviceName>
 spec:
   template:
     metadata:
       labels:
-        app: goal
+        app: <serviceName>
     spec:
       containers:
-        - name: goal
-          image: goal:latest
+        - name: <serviceName>
+          image: <serviceName>:latest
           ports:
 
           # don't try to pull the image since it was built locally

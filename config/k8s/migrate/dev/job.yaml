@@ -1,15 +1,15 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: goal-migrate
+  name: <serviceName>-migrate
 spec:
   template:
     metadata:
       labels:
-        app: goal-migrate
+        app: <serviceName>-migrate
     spec:
       restartPolicy: Never
       containers:
-        - name: goal-migrate
-          image: 301771908274.dkr.ecr.us-east-2.amazonaws.com/goal-migrate:c9262c736205006b15f855a6468c94ca3fb28889
-          args: ["-env", "dev", "-service", "goal-migrate", "-path", "/migration", "up"]
+        - name: <serviceName>-migrate
+          image: 301771908274.dkr.ecr.us-east-2.amazonaws.com/<serviceName>-migrate:c9262c736205006b15f855a6468c94ca3fb28889
+          args: ["-env", "dev", "-service", "<serviceName>-migrate", "-path", "/migration", "up"]

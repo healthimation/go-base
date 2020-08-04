@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: goal-test-db
+  name: <serviceName>-test-db
   labels:
-    app: goal-test-db
+    app: <serviceName>-test-db
 spec:
   type: NodePort
   ports:
     - port: 5432
   selector:
-    app: goal-test-db
+    app: <serviceName>-test-db

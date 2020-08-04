@@ -33,7 +33,7 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: goal-service # <<<<<<<<<<<<<<<<< CHANGE ME ON COPY
+          ECR_REPOSITORY: <serviceName>-service # <<<<<<<<<<<<<<<<< CHANGE ME ON COPY
           IMAGE_TAG: ${{ github.sha }}
         run: |
           # Build a docker container and
@@ -47,7 +47,7 @@ jobs:
         id: build-migration
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: goal-migrate # <<<<<<<<<<<<<<<<< CHANGE ME ON COPY
+          ECR_REPOSITORY: <serviceName>-migrate # <<<<<<<<<<<<<<<<< CHANGE ME ON COPY
           IMAGE_TAG: ${{ github.sha }}
         run: |
           # Build a docker container and

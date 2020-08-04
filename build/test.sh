@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ServiceName="goal-test"
+ServiceName="<serviceName>-test"
 verboseMode=""
 runOpt=""
 clean="false"
@@ -48,27 +48,38 @@ echo -e "\033[0;35mRunning migrations...\033[0m"
 # run migrations and wait
 kubectl delete -f config/k8s/migrate/test || true
 kubectl apply -f config/k8s/migrate/test
-sleep 2
 
-done=0
-count=0
-while [ $done = 0 ]
+
+
+complete=0
+failCount=0
+while [ $complete = 0 ]
 do
-    mostRecentPod=$(kubectl get pods -l app=${ServiceName}-migrate --sort-by=.status.startTime | tail -n 1 | awk '{print $1}')
-    kubectl logs -f $mostRecentPod
     
-    if [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.succeeded}') = '1' ]]
+    if [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.failed}') -gt 1 ]]
     then
-        done=1
-    elif [ "$count" -gt 30 ]
+        if [ "$failCount" -gt 30 ]
+        then
+            echo -e "\033[0;31mMigration Failed: exceeded max tries\033[0m"
+            kubectl logs job/${ServiceName}-migrate
+            exit 1
+        else 
+            echo "Waiting..."
+            let "failCount++" 
+        fi
+    elif [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.succeeded}') = '1' ]]
     then
-        echo -e "\033[0;31mMigration Failed: exceeded max tries\033[0m"
-        exit 1
+        echo "Migration Completed"
+        complete=1
+    elif [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.active}') = '1' ]]
+    then
+        echo "Migration Running..."
     else
-        let "++count"
+        echo "wtf?"
+        kubectl get job ${ServiceName}-migrate -o yaml
+        exit 1
     fi
-
-    sleep 2
+    sleep 1
 done
 
 # lookup db host
@@ -88,7 +99,7 @@ fi
 
 # find all go packages
 packages="$(find src -type f -name "*.go" -exec dirname {} \; | sort | uniq)"
-echo $packages
+
 lintRet=0
 vetRet=0
 testRet=0
