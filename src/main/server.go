@@ -6,13 +6,12 @@ import (
 	"os"
 
 	"github.com/healthimation/go-aws-config/src/awsconfig"
-	"github.com/healthimation/go-service/balancer"
-	"github.com/healthimation/goal-service/src/server/goal"
+	"github.com/healthimation/go-env-config/src/balancer"
 )
 
 // config keys
 const (
-	configKeyEnvironment       = "HMD_ENVIRONMENT"
+	configKeyEnvironment = "HMD_ENVIRONMENT"
 	configKeyPathPrefix        = "PATH_PREFIX"
 	configKeyAppendServiceName = "APPEND_SERVICE_NAME"
 )
@@ -24,7 +23,7 @@ func main() {
 		log.Fatal("environment not set")
 	}
 	// use the default service name to load config
-	conf := awsconfig.NewAWSLoader(env, goal.DefaultServiceName)
+	conf := awsconfig.NewAWSLoader(env, <serviceName>.DefaultServiceName)
 	err := conf.Initialize()
 	if err != nil {
 		log.Fatalf("Couldnt initialize config: %v", err)
@@ -33,10 +32,10 @@ func main() {
 	appendServiceName := conf.MustGetBool(configKeyAppendServiceName)
 	pathPrefix := conf.MustGetString(configKeyPathPrefix)
 
-	b := balancer.NewSRVBalancer()
-	svr := goal.NewServer(env, goal.DefaultServiceName, pathPrefix, appendServiceName, conf, b)
+	b := balancer.NewEnvBalancer("PGHOST", "PGPORT", "HMD", "URL")
+	svr := <serviceName>.NewServer(env, <serviceName>.DefaultServiceName, pathPrefix, appendServiceName, conf, b)
 
 	// Start up the server
-	log.Printf("Starting %s %s", env, goal.DefaultServiceName)
+	log.Printf("Starting %s %s", env, <serviceName>.DefaultServiceName)
 	log.Fatal(http.ListenAndServe(":8080", svr.GetRouter()))
 }

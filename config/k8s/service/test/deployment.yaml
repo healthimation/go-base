@@ -1,20 +1,20 @@
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
-  name: goal-test
+  name: <serviceName>-test
 spec:
   selector:
     matchLabels:
-      app: goal-test
+      app: <serviceName>-test
   replicas: 1 # tells deployment to run 2 pods matching the template
   template:
     metadata:
       labels:
-        app: goal-test
+        app: <serviceName>-test
     spec:
       containers:
-        - name: goal-test
-          image: goal:latest
+        - name: <serviceName>-test
+          image: <serviceName>:latest
           imagePullPolicy: Never
           envFrom:
             - secretRef:
@@ -30,6 +30,6 @@ spec:
             - name: AWS_REGION
               value: "us-east-2"
             - name: PGHOST
-              value: "goal-test-db"
+              value: "<serviceName>-test-db"
             - name: PGPORT
               value: "5432"

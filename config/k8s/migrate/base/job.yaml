@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: goal-migrate
+  name: <serviceName>-migrate
 spec:
   backoffLimit: 10 # number of retries before throwing error
   activeDeadlineSeconds: 120 # time to allow job to run
@@ -9,11 +9,11 @@ spec:
   template:
     metadata:
       labels:
-        app: goal-migrate
+        app: <serviceName>-migrate
     spec:
       restartPolicy: Never
       containers:
-        - name: goal-migrate
+        - name: <serviceName>-migrate
           env:
             - name: AWS_REGION
               value: us-east-2
