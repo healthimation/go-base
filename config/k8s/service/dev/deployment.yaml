@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: <serviceName>
+  name: goal
 spec:
   replicas: 2
   template:
     metadata:
       labels:
-        app: <serviceName>
+        app: goal
     spec:
       containers:
-        - name: <serviceName>
+        - name: goal
           image: <REGISTRY + IMAGE + TAG>
           env:
             - name: HMD_ENVIRONMENT

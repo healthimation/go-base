@@ -2,7 +2,7 @@
 
 #### Config Vars ####
 # update these to reflect your service
-ServiceName="<serviceName>"
+ServiceName="goal"
 kubeContext="docker-desktop"
 awsSecretName="aws-auth"
 
@@ -22,9 +22,9 @@ docker build -t $ServiceName .
 if [ $? -gt 0 ]; then exit 1; fi
 
 docker build -t $ServiceName-migrate -f Dockerfile.migrate .
+if [ $? -gt 0 ]; then exit 1; fi
 
-
-echo -e "\033[0;35mSwitching k8s Context\033[0m"
+echo -e "\033[0;35mSwitching k8s Context to local\033[0m"
 # target the local docker k8s cluster
 kubectl config use-context ${kubeContext}
 
@@ -46,6 +46,7 @@ echo -e "\033[0;35mDeploying service and db stack\033[0m"
 # deploy the service
 kubectl delete deployment ${ServiceName} || true
 kubectl apply -k config/k8s/service/local
+if [ $? -gt 0 ]; then exit 1; fi
 
 echo -e "\033[0;35mWaiting on db..\033[0m"
 # wait for db to be ready
@@ -55,37 +56,32 @@ echo -e "\033[0;35mRunning migrations...\033[0m"
 # run migrations and wait
 kubectl delete -k config/k8s/migrate/local || true
 kubectl apply -k config/k8s/migrate/local
+if [ $? -gt 0 ]; then exit 1; fi
 sleep 2
 
-#kubectl get pods -l app=authentication-migrate --sort-by=.metadata.creationTimestamp -o jsonpath="{.items[-1].metadata.name}"
-complete=0
-failCount=0
-while [ $complete = 0 ]
+
+done=0
+count=0
+while [ $done = 0 ]
 do
+    mostRecentPod=$(kubectl get pods -l app=${ServiceName}-migrate --sort-by=.status.startTime | tail -n 1 | awk '{print $1}')
+    kubectl logs -f $mostRecentPod
     
-    if [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.failed}') -gt 1 ]]
+    if [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.succeeded}') = '1' ]]
     then
-        if [ "$failCount" -gt 30 ]
-        then
-            echo -e "\033[0;31mMigration Failed: exceeded max tries\033[0m"
-            kubectl logs job/${ServiceName}-migrate
-            exit 1
-        else 
-            echo "Waiting..."
-            let "failCount++" 
-        fi
-    elif [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.succeeded}') = '1' ]]
-    then
-        echo "Migration Completed"
-        complete=1
-    elif [[ $(kubectl get job ${ServiceName}-migrate -o=jsonpath='{.status.active}') = '1' ]]
-    then
-        echo "Migration Running..."
-    else
-        echo "unexpected migration job state!"
-        kubectl get job ${ServiceName}-migrate -o yaml
-        exit 1
+        done=1
     fi
-    sleep 1
+
+     if [ "$count" -gt 30 ]
+     then
+        echo -e "\033[0;31mMigration Failed: exceeded max tries\033[0m"
+        exit 1
+    else
+        let "++count"
+    fi
+
+    sleep 2
 done
 
+mostRecentPod=$(kubectl get pods -l app=${ServiceName} --sort-by=.status.startTime | tail -n 1 | awk '{print $1}')
+kubectl logs -f ${mostRecentPod}
