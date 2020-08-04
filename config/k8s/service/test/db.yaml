@@ -1,10 +1,10 @@
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: <serviceName>-test-db
+  name: goal-test-db
   labels:
     type: local
-    app: <serviceName>-test-db
+    app: goal-test-db
 spec:
   storageClassName: manual
   capacity:
@@ -13,14 +13,14 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Delete
   hostPath:
-    path: "/tmp/k8s-<serviceName>-test-db"
+    path: "/tmp/k8s-goal-test-db"
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: <serviceName>-test-db-pv-claim
+  name: goal-test-db-pv-claim
   labels:
-    app: <serviceName>-test-db
+    app: goal-test-db
 spec:
   storageClassName: manual
   accessModes:
@@ -32,30 +32,30 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: <serviceName>-test-db
+  name: goal-test-db
 spec:
   selector:
     matchLabels:
-      app: <serviceName>-test-db
+      app: goal-test-db
   replicas: 1
   template:
     metadata:
       labels:
-        app: <serviceName>-test-db
+        app: goal-test-db
     spec:
       containers:
-        - name: <serviceName>-test-db
+        - name: goal-test-db
           image: postgres:10.4
           imagePullPolicy: "IfNotPresent"
           env:
             - name: POSTGRES_DB
-              value: <serviceName>-test
+              value: goal-test
           ports:
             - containerPort: 5432
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
-              name: <serviceName>-test-db-vol
+              name: goal-test-db-vol
       volumes:
-        - name: <serviceName>-test-db-vol
+        - name: goal-test-db-vol
           persistentVolumeClaim:
-            claimName: <serviceName>-test-db-pv-claim
+            claimName: goal-test-db-pv-claim

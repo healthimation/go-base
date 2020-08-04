@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: <serviceName>-db
+  name: goal-db
 spec:
   type: ExternalName
   externalName: <RDS HOST NAME>

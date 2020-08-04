@@ -1,5 +1,5 @@
 #!/bin/bash
 
-serviceName="<serviceName>"
+serviceName="goal"
 
 kubectl logs service/${serviceName} --follow=true

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-   name: <serviceName>
+   name: goal
 spec:
    selector:
-      app: <serviceName>
+      app: goal
    ports:
       - name: http
         port: 8080

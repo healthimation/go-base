@@ -1,0 +1,91 @@
+# github.com/aws/aws-sdk-go v1.33.17
+## explicit
+github.com/aws/aws-sdk-go/aws
+github.com/aws/aws-sdk-go/aws/awserr
+github.com/aws/aws-sdk-go/aws/awsutil
+github.com/aws/aws-sdk-go/aws/client
+github.com/aws/aws-sdk-go/aws/client/metadata
+github.com/aws/aws-sdk-go/aws/corehandlers
+github.com/aws/aws-sdk-go/aws/credentials
+github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds
+github.com/aws/aws-sdk-go/aws/credentials/endpointcreds
+github.com/aws/aws-sdk-go/aws/credentials/processcreds
+github.com/aws/aws-sdk-go/aws/credentials/stscreds
+github.com/aws/aws-sdk-go/aws/csm
+github.com/aws/aws-sdk-go/aws/defaults
+github.com/aws/aws-sdk-go/aws/ec2metadata
+github.com/aws/aws-sdk-go/aws/endpoints
+github.com/aws/aws-sdk-go/aws/request
+github.com/aws/aws-sdk-go/aws/session
+github.com/aws/aws-sdk-go/aws/signer/v4
+github.com/aws/aws-sdk-go/internal/context
+github.com/aws/aws-sdk-go/internal/ini
+github.com/aws/aws-sdk-go/internal/sdkio
+github.com/aws/aws-sdk-go/internal/sdkmath
+github.com/aws/aws-sdk-go/internal/sdkrand
+github.com/aws/aws-sdk-go/internal/sdkuri
+github.com/aws/aws-sdk-go/internal/shareddefaults
+github.com/aws/aws-sdk-go/internal/strings
+github.com/aws/aws-sdk-go/internal/sync/singleflight
+github.com/aws/aws-sdk-go/private/protocol
+github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
+github.com/aws/aws-sdk-go/private/protocol/jsonrpc
+github.com/aws/aws-sdk-go/private/protocol/query
+github.com/aws/aws-sdk-go/private/protocol/query/queryutil
+github.com/aws/aws-sdk-go/private/protocol/rest
+github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
+github.com/aws/aws-sdk-go/service/ssm
+github.com/aws/aws-sdk-go/service/sts
+github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/dgrijalva/jwt-go v2.7.0+incompatible
+github.com/dgrijalva/jwt-go
+# github.com/divideandconquer/go-consul-client v0.0.0-20190129224503-582bc8f36c6d
+## explicit
+github.com/divideandconquer/go-consul-client/src/balancer
+github.com/divideandconquer/go-consul-client/src/config
+# github.com/google/uuid v1.1.1
+github.com/google/uuid
+# github.com/healthimation/authentication-service v0.0.0-20200606144149-18bc1a2ce019
+## explicit
+github.com/healthimation/authentication-service/src/token
+# github.com/healthimation/go-aws-config v0.0.0-20180830182911-e9076f9fc7bf
+## explicit
+github.com/healthimation/go-aws-config/src/awsconfig
+# github.com/healthimation/go-client v0.0.0-20200428003822-f53fe7e43897
+## explicit
+github.com/healthimation/go-client/client
+# github.com/healthimation/go-env-config v0.0.0-20171201190552-45f6e839110d
+## explicit
+# github.com/healthimation/go-glitch v0.0.0-20170714151522-c1136cd4a72e
+## explicit
+github.com/healthimation/go-glitch/glitch
+github.com/healthimation/go-glitch/postgres
+# github.com/healthimation/go-service v0.0.0-20200612132135-41c512869f61
+## explicit
+github.com/healthimation/go-service/alice/chain
+github.com/healthimation/go-service/alice/middleware
+github.com/healthimation/go-service/balancer
+github.com/healthimation/go-service/service
+# github.com/husobee/vestigo v1.1.1
+## explicit
+github.com/husobee/vestigo
+# github.com/jmespath/go-jmespath v0.3.0
+github.com/jmespath/go-jmespath
+# github.com/justinas/alice v1.2.0
+## explicit
+github.com/justinas/alice
+# github.com/konsorten/go-windows-terminal-sequences v1.0.3
+github.com/konsorten/go-windows-terminal-sequences
+# github.com/lib/pq v1.8.0
+## explicit
+github.com/lib/pq
+github.com/lib/pq/oid
+github.com/lib/pq/scram
+# github.com/pborman/uuid v1.2.0
+## explicit
+github.com/pborman/uuid
+# github.com/sirupsen/logrus v1.6.0
+## explicit
+github.com/sirupsen/logrus
+# golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
+golang.org/x/sys/unix
