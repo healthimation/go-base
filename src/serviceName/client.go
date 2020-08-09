@@ -19,7 +19,7 @@ type serviceClient struct {
 }
 
 // NewClient will create a new Client
-func NewClient(lb balancer.DNS, useTLS bool) Client {
+func NewClient(lb balancer.DNS, useTLS bool, prependServiceNameToRoute bool) Client {
 	// return &serviceClient{c: client.NewBaseClient(lb.GetHttpUrl, serviceName, useTLS, 10*time.Second)}
 	return &serviceClient{
 		c:                         client.NewBaseClient(lb.GetHttpUrl, serviceName, useTLS, 10*time.Second, nil),
