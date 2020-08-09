@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
    name: <serviceName>
+   annotations:
+      alb.ingress.kubernetes.io/healthcheck-path: /<serviceName>/v1/test/ping
 spec:
    selector:
       app: <serviceName>
