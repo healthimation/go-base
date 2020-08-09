@@ -11,5 +11,5 @@ spec:
       restartPolicy: Never
       containers:
         - name: <serviceName>-migrate
-          image: 301771908274.dkr.ecr.us-east-2.amazonaws.com/<serviceName>-migrate:c9262c736205006b15f855a6468c94ca3fb28889
+          image: <REGISTRY + IMAGE + TAG>
           args: ["-env", "dev", "-service", "<serviceName>-migrate", "-path", "/migration", "up"]

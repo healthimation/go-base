@@ -4,7 +4,7 @@ metadata:
   name: <serviceName>-migrate
 spec:
   backoffLimit: 10 # number of retries before throwing error
-  activeDeadlineSeconds: 120 # time to allow job to run
+  activeDeadlineSeconds: 3600 # time to allow job to run
   ttlSecondsAfterFinished: 600 # auto cleanup ttl
   template:
     metadata:

@@ -16,6 +16,7 @@ const (
 	configKeyDBUser     = "HMD_DB_USER"
 	configKeyDBPassword = "HMD_DB_PASSWORD"
 	configKeyUseCORS    = "HMD_USE_CORS"
+	configKeySigningKey = "HMD_SIGNING_KEY"
 )
 
 // DefaultServiceName is used in 99% of cases
@@ -42,6 +43,7 @@ func (s *server) init() {
 	dbUser := s.conf.MustGetString(configKeyDBUser)
 	dbPass := s.conf.MustGetString(configKeyDBPassword)
 	useCORS := s.conf.MustGetBool(configKeyUseCORS)
+	signingKey := []byte(s.conf.MustGetString(configKeySigningKey))
 
 	log := middleware.GetDefaultLogger(s.serviceName, s.environment)
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/healthimation/go-aws-config/src/awsconfig"
 	"github.com/healthimation/go-env-config/src/balancer"
+	"github.com/healthimation/go-service/balancer"
 )
 
 // config keys
@@ -32,7 +33,7 @@ func main() {
 	appendServiceName := conf.MustGetBool(configKeyAppendServiceName)
 	pathPrefix := conf.MustGetString(configKeyPathPrefix)
 
-	b := balancer.NewEnvBalancer("PGHOST", "PGPORT", "HMD", "URL")
+	b := balancer.NewSRVBalancer()
 	svr := <serviceName>.NewServer(env, <serviceName>.DefaultServiceName, pathPrefix, appendServiceName, conf, b)
 
 	// Start up the server
